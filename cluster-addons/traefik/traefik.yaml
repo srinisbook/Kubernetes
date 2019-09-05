@@ -1,0 +1,166 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: traefik
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses/status
+  verbs:
+  - update
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: traefik
+---  
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik
+  namespace: traefik
+---  
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: traefik
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik
+subjects:
+- kind: ServiceAccount
+  name: traefik
+  namespace: traefik
+---
+apiVersion: v1
+data:
+  traefik.toml: |
+    # traefik.toml
+    logLevel = "INFO"
+    defaultEntryPoints = ["http", "httpn"]
+    [entryPoints]
+      [entryPoints.http]
+      address = ":80"
+      compress = true
+      [entryPoints.httpn]
+      address = ":8880"
+      compress = true
+    [kubernetes]
+    [traefikLog]
+      format = "json"
+kind: ConfigMap
+metadata:
+  name: traefik
+  namespace: traefik
+---
+kind: Deployment
+metadata:
+  labels:
+    app: traefik
+    release: traefik
+  name: traefik
+  namespace: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+      release: traefik
+  template:
+	metadata:
+      annotations:
+        checksum/config: abbe531808ce2aa37f091813755b24e75f835ab7f49dcade85c7c1ae1839aaf7
+      labels:
+        app: traefik
+        release: traefik
+    spec:
+      containers:
+      - args:
+        - --configfile=/config/traefik.toml
+        image: traefik:1.7.9
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 80
+          timeoutSeconds: 2
+        name: traefik
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 8880
+          name: httpn
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 80
+          timeoutSeconds: 2
+        resources: {}
+        volumeMounts:
+        - mountPath: /config
+          name: config
+      serviceAccount: traefik
+      serviceAccountName: traefik
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: traefik
+        name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: traefik
+    release: traefik
+  name: traefik
+  namespace: traefik
+spec:
+  ports:
+  - name: http
+    nodePort: 31762
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - name: https
+    nodePort: 32174
+    port: 443
+    protocol: TCP
+    targetPort: httpn
+  selector:
+    app: traefik
+    release: traefik
+  type: LoadBalancer
