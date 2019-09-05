@@ -75,6 +75,7 @@ metadata:
   name: traefik
   namespace: traefik
 ---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -89,7 +90,7 @@ spec:
       app: traefik
       release: traefik
   template:
-	metadata:
+    metadata:
       annotations:
         checksum/config: abbe531808ce2aa37f091813755b24e75f835ab7f49dcade85c7c1ae1839aaf7
       labels:
