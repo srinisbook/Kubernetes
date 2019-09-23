@@ -1,0 +1,63 @@
+#Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubedoc
+  namespace: kubedoc
+---
+# Cluster Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: kubedoc-reader
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "watch", "list"]
+---  
+#Cluster Role Binding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: kubedoc
+subjects:
+  - kind: ServiceAccount
+    name: kubedoc
+    namespace: kubedoc
+roleRef:
+  kind: ClusterRole
+  name: kubedoc-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubedoc
+  namespace: kubedoc
+  labels:
+    app: kubedoc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubedoc
+  template:
+    metadata:
+      labels:
+        app: kubedoc
+    spec:
+      serviceAccountName: kubedoc
+      containers:
+      - name: kubedoc
+        image: srinisbook/kubedoc
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CLUSTER_NAME
+          value: "DevOps Prod Cluster"
+        - name: ENVIRONMENTS
+          value: "Test"
+        - name: ORGANIZATION
+          value: "B/S/H"

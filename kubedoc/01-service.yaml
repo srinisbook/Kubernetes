@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kubedoc
+  name: kubedoc
+  namespace: kubedoc
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: kubedoc
+  type: ClusterIP
+

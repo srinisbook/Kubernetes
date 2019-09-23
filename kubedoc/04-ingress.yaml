@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kubedoc
+  namespace: kubedoc
+  annotations:
+    kubernetes.io/ingress.class: contour
+    kubernetes.io/tls-acme: "true"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    certmanager.k8s.io/cluster-issuer: 'letsencrypt-prod'
+spec:
+  tls:
+   - hosts:
+       - your-domain.com
+     secretName: your-domain-com
+  rules:
+   - host: your-domain.com
+     http:
+       paths:
+        - path: /
+          backend:
+           serviceName: kubedoc
+           servicePort: 80
