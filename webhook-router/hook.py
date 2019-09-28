@@ -3,6 +3,7 @@ from flask import Flask, request, abort
 import requests
 import json
 import os
+import datetime
 
 app = Flask(__name__)
 
@@ -16,16 +17,15 @@ def webhook():
         try:
             WEBHOOK_URI = os.environ['WEBHOOK_URI']
         except KeyError:
-            print ("Please set the environment variable WEBHOOK_URI")
+            print ("[ERROR] " + datetime.datetime.now().strftime("%Y %d %b %H:%M:%S") + " Please set the environment variable WEBHOOK_URI")
 
         message = json.dumps(request.json)
         
-        response = "Error occured while sending message. Please check webhook url"
+        response = "[ERROR] " + datetime.datetime.now().strftime("%Y %d %b %H:%M:%S") + " Error occured while sending message. Please check webhook url"
         
         try:
             response = requests.post(
-                url=WEBHOOK_URI,
-                json={"Content": message})
+                url=WEBHOOK_URI,data=json.dumps(message), headers={'Content-Type': 'application/json'} )
         except:
             return response
         
@@ -34,4 +34,7 @@ def webhook():
         abort(400)
 
 if __name__ == '__main__':
+    
+    print("[INFO] " + datetime.datetime.now().strftime("%Y %d %b %H:%M:%S") + " Webhook router stated." )
+
     serve(app, host='0.0.0.0', port=5000)
