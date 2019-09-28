@@ -31,7 +31,7 @@ kind: Service
 metadata:
   labels:
     app: webhook-router
-  name: webhook-router-g
+  name: webhook-router
 spec:
   ports:
   - port: 80
