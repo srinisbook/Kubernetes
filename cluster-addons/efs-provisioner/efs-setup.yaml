@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: efs-setup
+spec:
+  storageClassName: efs-setup
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: < efs dnsname >
+    path: "/"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: efs-setup
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-setup
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: efs-admin
+spec:
+  containers:
+    - name: ubuntu
+      command: [sleep,infinity]
+      image: ubuntu:latest
+      volumeMounts:
+        - name: efs
+          mountPath: /efs-setup
+  volumes:
+    - name: efs
+      persistentVolumeClaim:
+        claimName: efs-setup
