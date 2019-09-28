@@ -1,0 +1,6 @@
+apiVersion: garden.sapcloud.io/v1beta1
+kind: Project
+metadata:
+  name: test
+spec:
+  namespace: test

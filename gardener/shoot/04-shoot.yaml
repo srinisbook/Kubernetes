@@ -1,0 +1,259 @@
+apiVersion: garden.sapcloud.io/v1beta1
+kind: CloudProfile
+metadata:
+  name: aws_cloudprofile
+spec:
+  aws:
+    constraints:
+      dnsProviders:
+      - name: unmanaged
+      kubernetes:
+        versions:
+        - 1.15.2
+        - 1.14.5
+        - 1.13.9
+        - 1.12.10
+        - 1.11.10
+        - 1.10.13
+      machineImages:
+      - name: coreos
+        versions:
+        - version: 2023.5.0
+        # Proper mappings to region-specific AMIs must exist in the `Worker` controller of the provider extension.
+      machineTypes:
+      - name: m5.large
+        cpu: "2"
+        gpu: "0"
+        memory: 8Gi
+        usable: true
+      - name: m5.xlarge
+        cpu: "4"
+        gpu: "0"
+        memory: 16Gi
+        usable: true
+      - name: m5.2xlarge
+        cpu: "8"
+        gpu: "0"
+        memory: 32Gi
+        usable: true
+      - name: m5.4xlarge
+        cpu: "16"
+        gpu: "0"
+        memory: 64Gi
+        usable: true
+      - name: m5.12xlarge
+        cpu: "48"
+        gpu: "0"
+        memory: 192Gi
+        usable: true
+      - name: m5.24xlarge
+        cpu: "96"
+        gpu: "0"
+        memory: 384Gi
+        usable: false
+      - name: p2.xlarge
+        cpu: "4"
+        gpu: "1"
+        memory: 61Gi
+      - name: p2.8xlarge
+        cpu: "32"
+        gpu: "8"
+        memory: 488Gi
+      - name: p2.16xlarge
+        cpu: "64"
+        gpu: "16"
+        memory: 732Gi
+      volumeTypes:
+      - name: gp2
+        class: standard
+        usable: true
+      - name: io1
+        class: premium
+        usable: false
+      zones:
+      - region: us-east-1
+        names:
+        - us-east-1a
+        - us-east-1b
+        - us-east-1c
+---
+apiVersion: garden.sapcloud.io/v1beta1
+kind: Shoot
+metadata:
+  name: test-shoot
+  namespace: test
+  annotations:
+    confirmation.garden.sapcloud.io/deletion: "true"
+spec:
+  cloud:
+    profile: aws_cloudprofile
+    seed: default-seed
+    region: us-east-1
+    secretBindingRef:
+      name: aws-creds-secretbinding
+    aws:
+      networks:
+        internal:
+        - 20.250.112.0/24
+        - 20.250.113.0/24
+        - 20.250.114.0/24
+        pods: 20.9.0.0/16
+        public:
+        - 20.250.96.0/24
+        - 20.250.97.0/24
+        - 20.250.98.0/24
+        services: 20.10.0.0/16
+        vpc:
+          cidr: 20.250.0.0/16
+        workers:
+        - 20.250.0.0/22
+        - 20.250.4.0/22
+        - 20.250.8.0/22
+      workers:
+      - name: cpu-worker
+        machineType: m5.large
+        volumeType: gp2
+        volumeSize: 20Gi
+        autoScalerMin: 2
+        autoScalerMax: 2
+        maxSurge: 1
+        maxUnavailable: 0
+      # labels:
+      #   key: value
+      # annotations:
+      #   key: value
+      # taints: # See also https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      # - key: foo
+      #   value: bar
+      #   effect: NoSchedule
+      zones: ['us-east-1a','us-east-1b','us-east-1c']
+  kubernetes:
+  # clusterAutoscaler:
+  #   scaleDownUtilizationThreshold: 0.5
+  #   scaleDownUnneededTime: 30m
+  #   scaleDownDelayAfterAdd: 60m
+  #   scaleDownDelayAfterFailure: 10m
+  #   scaleDownDelayAfterDelete: 10s
+  #   scanInterval: 10s
+    version: 1.12.9
+    allowPrivilegedContainers: true # 'true' means that all authenticated users can use the "gardener.privileged" PodSecurityPolicy, allowing full unrestricted access to Pod features.
+  # kubeAPIServer:
+  #   featureGates:
+  #     SomeKubernetesFeature: true
+  #   runtimeConfig:
+  #     scheduling.k8s.io/v1alpha1: true
+  #   oidcConfig:
+  #     caBundle: |
+  #       -----BEGIN CERTIFICATE-----
+  #       Li4u
+  #       -----END CERTIFICATE-----
+  #     clientID: client-id
+  #     groupsClaim: groups-claim
+  #     groupsPrefix: groups-prefix
+  #     issuerURL: https://identity.example.com
+  #     usernameClaim: username-claim
+  #     usernamePrefix: username-prefix
+  #     signingAlgs: RS256,some-other-algorithm
+  #-#-# only usable with Kubernetes >= 1.11
+  #     requiredClaims:
+  #       key: value
+  #   admissionPlugins:
+  #   - name: PodNodeSelector
+  #     config: |
+  #       podNodeSelectorPluginConfig:
+  #         clusterDefaultNodeSelector: <node-selectors-labels>
+  #         namespace1: <node-selectors-labels>
+  #         namespace2: <node-selectors-labels>
+  #   auditConfig:
+  #     auditPolicy:
+  #       configMapRef:
+  #         name: auditpolicy
+  # cloudControllerManager:
+  #   featureGates:
+  #     SomeKubernetesFeature: true
+  # kubeControllerManager:
+  #   featureGates:
+  #     SomeKubernetesFeature: true
+  #   horizontalPodAutoscaler:
+  #     syncPeriod: 30s
+  #     tolerance: 0.1
+  #-#-# only usable with Kubernetes < 1.12
+  #     downscaleDelay: 15m0s
+  #     upscaleDelay: 1m0s
+  #-#-# only usable with Kubernetes >= 1.12
+  #     downscaleStabilization: 5m0s
+  #     initialReadinessDelay: 30s
+  #     cpuInitializationPeriod: 5m0s
+  # kubeScheduler:
+  #   featureGates:
+  #     SomeKubernetesFeature: true
+  # kubeProxy:
+  #   featureGates:
+  #     SomeKubernetesFeature: true
+  #   mode: IPVS
+  # kubelet:
+  #   cpuCFSQuota: true
+  #   cpuManagerPolicy: none
+  #   podPidsLimit: 10
+  #   featureGates:
+  #     SomeKubernetesFeature: true
+  dns:
+  # provider: aws-route53
+    domain: test-shoot.shoot.yourdomain.com
+# hibernation:
+#   enabled: false
+#   schedules:
+#   - start: "0 20 * * *" # Start hibernation every day at 8PM
+#     end: "0 6 * * *"    # Stop hibernation every day at 6AM
+#     location: "America/Los_Angeles" # Specify a location for the cron to run in
+  maintenance:
+    timeWindow:
+      begin: 220000+0100
+      end: 230000+0100
+    autoUpdate:
+      kubernetesVersion: true
+  # Backup configuration for Shoot clusters is deprecated and no longer supported.
+  # The responsibility for these settings has been shifted to Garden administrators.
+  # This field will be removed in the future and is only kept for API compatibility reasons. It is not
+  # evaluated or respected at all. Please do not use this field anymore.
+  backup:
+    schedule: "0 */24 * * *"
+    maximum: 7
+  addons:
+    # nginx-ingress addon is still supported but deprecated.
+    # This field will be removed in the future. You should deploy your own ingress controller
+    # instead of enabling it here. You should not use this field anymore.
+    nginx-ingress:
+      enabled: false
+      loadBalancerSourceRanges: []
+    kubernetes-dashboard:
+      enabled: true
+    # authenticationMode: basic # allowed values: basic,token
+    # kube2iam addon is still supported but deprecated.
+    # This field will be removed in the future. You should deploy kube2iam as well as
+    # the desired AWS IAM roles on your own instead of enabling it here. Please do not
+    # use this field anymore.
+    # Heapster addon is deprecated and no longer supported. Gardener deploys the Kubernetes metrics-server
+    # into the kube-system namespace of shoots (cannot be turned off) for fetching metrics and enabling
+    # horizontal pod auto-scaling.
+    # This field will be removed in the future and is only kept for API compatibility reasons. It is not
+    # evaluated or respected at all. Please do not use this field anymore.
+    heapster:
+      enabled: false
+    # cluster-autoscaler addon is automatically enabled if at least one of the configured
+    # worker pools (see above) uses max>min. You do not need to enable it separately anymore. Any value
+    # you put here has no effect. This field will be removed in the future. Please do not use it anymore.
+    cluster-autoscaler:
+      enabled: true
+    # kube-lego addon is still supported but deprecated.
+    # This field will be removed in the future. You should deploy your own kube-lego/cert-manager
+    # instead of enabling it here. You should not use this field anymore.
+    kube-lego:
+      enabled: false
+      email: your-email@domain.com
+    # Monocular addon is deprecated and no longer supported.
+    # This field will be removed in the future and is only kept for API compatibility reasons. It is not
+    # evaluated or respected at all. You should deploy Monocular on your own instead of enabling it here.
+    # Please do not use this field anymore.
+    monocular:
+      enabled: false

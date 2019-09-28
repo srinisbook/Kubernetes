@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+  annotations:
+    project.garden.sapcloud.io/owner: your-email@domain.com
+  labels:
+    garden.sapcloud.io/role: project
+    project.garden.sapcloud.io/name: test
