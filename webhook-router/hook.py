@@ -25,7 +25,8 @@ def webhook():
         
         try:
             response = requests.post(
-                url=WEBHOOK_URI,data=json.dumps(message), headers={'Content-Type': 'application/json'} )
+                url=WEBHOOK_URI,
+                json={"Content": message}) 
         except:
             return response
         
