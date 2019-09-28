@@ -55,7 +55,7 @@ spec:
         ports:
         - containerPort: 8000
         env:
-        - name: USERNAME
+        - name: USER_NAME
           valueFrom:
             secretKeyRef:
               name: kube-console-creds
