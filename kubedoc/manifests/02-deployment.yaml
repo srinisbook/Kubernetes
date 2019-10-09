@@ -56,8 +56,8 @@ spec:
         - containerPort: 8000
         env:
         - name: CLUSTER_NAME
-          value: "DevOps Prod Cluster"
+          value: "My Cluster"
         - name: ENVIRONMENTS
           value: "Test"
         - name: ORGANIZATION
-          value: "B/S/H"
+          value: "Srinisbook"
