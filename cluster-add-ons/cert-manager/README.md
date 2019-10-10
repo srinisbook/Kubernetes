@@ -98,3 +98,16 @@ You must add an annotation in the ingress configuration with issuer or clusteris
               serviceName: frontend
               servicePort: 8080      
 
+Once the ingress created, there should be a tls secret and certifcate created.
+
+    $ kubectl get secrets
+    NAME                TYPE               DATA   AGE
+    app-mydomain-com    kubernetes.io/tls  3      1d
+    
+    $ kubectl get certificates
+    NAME                READY   SECRET            AGE
+    app-mydomain-com    True    app-mydomain-com  1d
+
+If you found the certicate or secret not created, then check the logs of the cert-manger service for errors.
+
+Note: If you use letsencrypt staging, you will see conectio is not secure in the browser. You will see connection is secure when you use letsencrypt production issuer. 
