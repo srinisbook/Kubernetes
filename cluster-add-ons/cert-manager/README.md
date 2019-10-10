@@ -61,14 +61,40 @@ Edit the issuer manifest and add your working email address. It is used for ACME
 
 Create letsencrypt staging for testing and switch over to letsencrypt production server once your application worked as expected.
 
-      $ kubectl apply -f cluster-issuer-stage.yaml
+    $ kubectl apply -f cluster-issuer-stage.yaml
                     --  or --
-      $ kubectl apply -f cluster-issuer-prod.yaml
+    $ kubectl apply -f cluster-issuer-prod.yaml
 
 List all cluster-issuers
 
-       $ kubectl get clusterissuers
-       NAME                  AGE
-       letsencrypt-prod      1d
-       letsencrypt-stage     1d
-    
+    $ kubectl get clusterissuers
+    NAME                  AGE
+    letsencrypt-prod      1d
+    letsencrypt-stage     1d
+
+#### Ingress object annotation
+
+You must add an annotation in the ingress configuration with issuer or clusterissuer name.
+
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      name: frontend-ingress
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+       #certmanager.k8s.io/issuer: letsencrypt-prod
+    spec:
+      tls:
+      - hosts:
+        - app.mydomain.com
+        secretName: app-mydomain-com
+      rules:
+      - host: app.mydomain.com
+        http:
+          paths:
+          - path: /
+            backend:
+              serviceName: frontend
+              servicePort: 8080      
+
