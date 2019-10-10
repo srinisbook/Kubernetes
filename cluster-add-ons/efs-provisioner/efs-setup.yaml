@@ -16,7 +16,6 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: efs-setup
-  namespace: default
 spec:
   accessModes:
     - ReadWriteMany
@@ -28,7 +27,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: efs-mount
+  name: efs-setup
 spec:
   containers:
     - name: ubuntu
