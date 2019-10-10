@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: prometheus
+  labels:
+    app.kubernetes.io/name: prometheus
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+    - access: proxy
+      isDefault: true
+      name: prometheus
+      type: prometheus
+      url: http://prometheus:9090
+      version: 1
