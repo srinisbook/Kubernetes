@@ -124,10 +124,10 @@ We can also define relative weights for the Services.
           services:
             - name: music-1-srv
               port: 80
-        weight: 30
+              weight: 30
             - name: music-2-srv
               port: 80
-        weight: 70
+              weight: 70
 In the above example, we are sending 30% of the traffic to Service music-1-srv, while Service music-2-srv receives the other 70% of traffic.
 
 #### Load Balancing Strategy
