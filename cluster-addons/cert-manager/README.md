@@ -1,4 +1,5 @@
-![](https://github.com/jetstack/cert-manager/raw/master/logo/logo.png)
+<img src="https://github.com/jetstack/cert-manager/raw/master/logo/logo.png" width="200" />
+
 # cert-manager
 
 cert-manager is a Kubernetes add-on to automate TLS certificates management and issuance from various issuing sources such as Let’s Encrypt, HashiCorp Vault, Venafi, a simple signing keypair, or self signed.
