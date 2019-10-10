@@ -35,9 +35,11 @@ You will need at least one Issuer or ClusterIssuer in order to begin issuing cer
 
 - If you want to create a single issuer that can be consumed in multiple namespaces, you should consider creating a ClusterIssuer resource.
 
-<img src="https://dyltqmyl993wv.cloudfront.net/assets/stacks/cert-manager/img/cert-manager-stack-220x234.png" width="200" />
+
 
 # Let's Encrypt
+
+<img src="https://dyltqmyl993wv.cloudfront.net/assets/stacks/cert-manager/img/cert-manager-stack-220x234.png" width="200" />
 
 Let’s Encrypt is a free, automated, and open Certificate Authority. Documentation can be found at [letsencrypt.org]( https://letsencrypt.org/docs/)
 
