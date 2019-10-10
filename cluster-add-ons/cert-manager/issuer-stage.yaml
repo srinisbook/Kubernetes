@@ -1,0 +1,11 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: letsencrypt-stage
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: 'your-name@domain.com'
+    privateKeySecretRef:
+      name: letsencrypt-stage
+    http01: {}
