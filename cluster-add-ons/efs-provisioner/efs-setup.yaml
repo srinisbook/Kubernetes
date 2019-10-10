@@ -9,7 +9,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: < efs dnsname >
+    server: <efs_dnsname>
     path: "/"
 ---
 kind: PersistentVolumeClaim
@@ -28,7 +28,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: efs-admin
+  name: efs-mount
 spec:
   containers:
     - name: ubuntu

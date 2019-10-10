@@ -58,8 +58,8 @@ roleRef:
 ---
 apiVersion: v1
 data:
-  aws.region: < aws region >
-  file.system.id: < efs id >
+  aws.region: <aws_region>
+  file.system.id: <efs_filesystem_id>
   provisioner.name: efs-storage/aws-efs
 kind: ConfigMap
 metadata:
@@ -109,11 +109,5 @@ spec:
       volumes:
         - name: pv-volume
           nfs:
-            server: < efs dns name >
+            server: <efs_dns_name>
             path: /persistentvolumes
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: nfs
-provisioner: efs-storage/aws-efs
