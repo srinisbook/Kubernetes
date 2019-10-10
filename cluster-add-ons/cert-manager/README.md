@@ -10,18 +10,18 @@ Documentation for cert-manager can be found at [docs.cert-manager.io](https://do
 
 ### Install cert-manager
 
-    git clone https://github.com/srinisbook/Kubernetes.git
-    cd Kubernetes/cluster-addons/cert-manager/
-    kubectl apply -f cert-manager-v0.9.1.yaml
+    $ git clone https://github.com/srinisbook/Kubernetes.git
+    $ cd Kubernetes/cluster-addons/cert-manager/
+    $ kubectl apply -f cert-manager-v0.9.1.yaml
 
 ### Helm chart
 
 To install cert-manager with helm chart:
 
-    helm install --name cert-manager --namespace cert-manager stable/cert-manager
+    $ helm install --name cert-manager --namespace cert-manager stable/cert-manager
 Uninstalling the Chart
 
-    helm del cert-manager --purge
+    $ helm del cert-manager --purge
     
 Helm chart documentation con be found [here](https://github.com/helm/charts/tree/master/stable/cert-manager "here")
 
@@ -51,4 +51,24 @@ It is recommend testing against staging before using production environment. Thi
 
 See [Rate limits](https://letsencrypt.org/docs/rate-limits/)
 
+### Create Issue (or ClusterIssuer)
 
+Edit the issuer manifest and add your working email address. It is used for ACME registration.
+
+      acme:
+        server: https://acme-v02.api.letsencrypt.org/directory
+        email: 'your-name@domain.com'
+
+Create letsencrypt staging for testing and switch over to letsencrypt production server once your application worked as expected.
+
+      $ kubectl apply -f cluster-issuer-stage.yaml
+                    --  or --
+      $ kubectl apply -f cluster-issuer-prod.yaml
+
+List all cluster-issuers
+
+       $ kubectl get clusterissuers
+       NAME                  AGE
+       letsencrypt-prod      1d
+       letsencrypt-stage     1d
+    
