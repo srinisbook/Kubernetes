@@ -30,7 +30,7 @@ def webhook():
         alerts = request_data['alerts']
         no_of_alerts = len(alerts)
         
-        message = "Alerts from \t: " + SERVER_NAME + "\n"
+        message = "Alerts from \t: " + SERVER_NAME + "\n" + "===================================" + "\n"
         
         for i in range(no_of_alerts):
             try:
