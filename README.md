@@ -3,8 +3,8 @@
 Deploy, scale, and manage your containerized applications on Kubernetes
 
 ## Cluster Setup
-### minikube
-### kops
+ 1. minikube
+ 2. kops
 
 ## Cluster Add-ons
 ### Ingress Controllers
@@ -13,21 +13,22 @@ Deploy, scale, and manage your containerized applications on Kubernetes
  2. Traefik ingress controller
  3. Heptio contour ingress controller
 
-### Cert-manager
+### SSL/TLS Termination
+ 1. cert-manager
 
 ### Storage Add-ons
 
  1. NFS Provisioner
  2. EFS Provisioner
-### Kube2iam
+
+### Authentication Add-ons
+ 1. kube2iam
 
 ## Dashboards
 
-### Kubernetes WebUI
-
-### Kubeconsole
-
-### Kubedoc
+ 1. Kubernetes WebUI
+ 2. Kubeconsole
+ 3. Kubedoc
 
 ## Tools
 1. kubectl
