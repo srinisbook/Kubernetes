@@ -1,0 +1,76 @@
+#Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-console
+  namespace: kube-console
+---
+#Cluster Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: kube-console
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "watch", "list"]
+---  
+#Cluster Role Binding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-console
+subjects:
+  - kind: ServiceAccount
+    name: kube-console
+    namespace: kube-console
+roleRef:
+  kind: ClusterRole
+  name: kube-console
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-console
+  namespace: kube-console
+  labels:
+    app: kube-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-console
+  template:
+    metadata:
+      labels:
+        app: kube-console
+    spec:
+      serviceAccountName: kube-console
+      containers:
+      - name: kube-console
+        image: srinisbook/kube-console
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: USER_NAME
+          valueFrom:
+            secretKeyRef:
+              name: kube-console-creds
+              key: username
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kube-console-creds
+              key: password
+        - name: EMAIL
+          value: 'admin@example.com'
+        livenessProbe:
+          httpGet:
+            path: /accounts/login/
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
