@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-rewrite-conf
+  labels:
+    app: nginx-redirect
+data:
+  nginx.conf: |
+    events {
+    }
+    http {
+      server {
+        listen 80;
+        server_name example.com;
+        return 301 $scheme://some-example.com$request_uri;
+      }
+    }

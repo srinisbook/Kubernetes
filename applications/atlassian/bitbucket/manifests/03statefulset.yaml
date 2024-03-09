@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: bitbucket
+  name: bitbucket-server
+  namespace: atlassian-bitbucket
+spec:
+  serviceName: bitbucket-server
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bitbucket
+  template:
+    metadata:
+      labels:
+        app: bitbucket
+    spec:
+      initContainers:
+      - name: "init-chown-data"
+        image: busybox:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh","-c"]
+        args: ["chown -R  65534:65534 /var/atlassian/application-data/bitbucket; chmod -R 777 /var/atlassian/application-data/bitbucket"]
+        volumeMounts:
+        - name: bitbucket-workdir
+          mountPath: /var/atlassian/application-data/bitbucket
+          subPath: ""
+      containers:
+        - name: bitbucket-server
+          image: atlassian/bitbucket-server
+          imagePullPolicy: Always
+          volumeMounts:
+          - name: bitbucket-workdir
+            mountPath: /var/atlassian/application-data/bitbucket
+          - name: bitbucket-logs
+            mountPath: /opt/atlassian/bitbucket/logs
+          ports:
+          - containerPort: 7990
+            name: http
+            protocol: TCP
+          - containerPort: 7999
+            name: ssh
+            protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 6
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+      volumes:
+        - name: bitbucket-workdir
+          persistentVolumeClaim:
+            claimName: bitbucket-workdir
+        - name: bitbucket-logs
+          emptyDir: {}

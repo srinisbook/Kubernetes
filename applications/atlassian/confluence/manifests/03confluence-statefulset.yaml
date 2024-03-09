@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: confluence
+  name: confluence-server
+  namespace: atlassian-confluence
+spec:
+  serviceName: confluence-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: confluence
+  template:
+    metadata:
+      labels:
+        app: confluence
+    spec:
+      initContainers:
+      - name: "init-chown-data"
+        image: busybox:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh","-c"]
+        args: ["chown -R  65534:65534 /var/atlassian/application-data/confluence; chmod -R 777 /var/atlassian/application-data/confluence"]
+        volumeMounts:
+        - name: confluence-data
+          mountPath: /var/atlassian/application-data/confluence
+          subPath: ""
+      containers:
+      - env:
+        - name: JVM_MINIMUM_MEMORY
+          value: 1024m
+        - name: JVM_MAXIMUM_MEMORY
+          value: 2048m
+        - name: JVM_SUPPORT_RECOMMENDED_ARGS
+          value: -XX:MaxMetaspaceSize=512m -XX:MaxDirectMemorySize=10m  -Dsynchrony.memory.max=0m
+        image: atlassian/confluence-server:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          successThreshold: 1
+          tcpSocket:
+            port: http
+          timeoutSeconds: 3
+        name: confluence
+        ports:
+        - containerPort: 8090
+          name: http
+          protocol: TCP
+        - containerPort: 8091
+          name: synchrony
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          successThreshold: 1
+          tcpSocket:
+            port: http
+          timeoutSeconds: 3
+        resources:
+          requests:
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /var/atlassian/application-data/confluence
+          name: confluence-data
+      volumes:
+        - name: confluence-data
+          persistentVolumeClaim:
+            claimName: confluence-data

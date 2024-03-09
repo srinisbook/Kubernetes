@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: traefik
+    kubernetes.io/tls-acme: "true"
+  name: jira-service-desk
+  namespace: atlassian-jira-service-desk
+spec:
+  rules:
+  - host: jira-service-desk.domain.com
+    http:
+      paths:
+      - backend:
+          serviceName: jira-service-desk-service
+          servicePort: 8080
+        path: /
+  tls:
+  - hosts:
+    - jira-service-desk.domain.com
+    secretName: jira-service-desk-tls

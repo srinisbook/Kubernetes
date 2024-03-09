@@ -1,0 +1,14 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    app: nfs-server
+  name: nfs-server
+allowVolumeExpansion: true  
+mountOptions:
+- vers=4.1
+- noatime
+provisioner: k8s.local/nfs-server-provisioner
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bamboo-agent-home
+  namespace: atlassian-bamboo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bamboo-agent-base
+  namespace: atlassian-bamboo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bamboo-agent-base
+  template:
+    metadata:
+      labels:
+        app: bamboo-agent-base
+    spec:
+      initContainers:
+        - name: "init-chown-data"
+          image: busybox:latest
+          imagePullPolicy: Always
+          command: ["/bin/sh","-c"]
+          args: ["chown -R  65534:65534 /home/bamboo/bamboo-agent-home; chmod -R 777 /home/bamboo/bamboo-agent-home"]
+          volumeMounts:
+            - name: bamboo-agent-home
+              mountPath: /home/bamboo/bamboo-agent-home
+              subPath: "" 
+      containers:
+        - name: bamboo-agent-base
+          image: atlassian/bamboo-agent-base:6.8.3
+          imagePullPolicy: Always
+          args: [ "http://bamboo-server/agentServer/" ]
+          volumeMounts:
+          - name: bamboo-agent-home
+            mountPath: /home/bamboo/bamboo-agent-home
+      volumes:
+      - name: bamboo-agent-home
+        persistentVolumeClaim:
+          claimName: bamboo-agent-home
+    

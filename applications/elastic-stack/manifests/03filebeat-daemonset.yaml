@@ -1,0 +1,82 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    app: filebeat
+  name: filebeat
+  namespace: elastic-logging
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      containers:
+      - args:
+        - -c
+        - /etc/filebeat.yml
+        - -e
+        env:
+        - name: ELASTICSEARCH_HOST
+          value: elasticsearch
+        - name: ELASTICSEARCH_PORT
+          value: "443"
+       # - name: ELASTICSEARCH_USERNAME
+       #   valueFrom:
+       #     secretKeyRef:
+       #       key: username
+       #       name: elasticsearch
+       # - name: ELASTICSEARCH_PASSWORD
+       #   valueFrom:
+       #     secretKeyRef:
+       #      key: password
+       #       name: elasticsearch
+        image: docker.elastic.co/beats/filebeat:7.4.0
+        imagePullPolicy: IfNotPresent
+        name: filebeat
+        securityContext:
+          runAsUser: 0
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /etc/filebeat.yml
+          name: config
+          readOnly: true
+          subPath: filebeat.yml
+        - mountPath: /usr/share/filebeat/inputs.d
+          name: inputs
+          readOnly: true
+        - mountPath: /usr/share/filebeat/data
+          name: data
+        - mountPath: /var/lib/docker/containers
+          name: varlibdockercontainers
+          readOnly: true
+      serviceAccount: filebeat
+      serviceAccountName: filebeat
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      volumes:
+      - configMap:
+          defaultMode: 0644
+          name: filebeat-config
+        name: config
+      - configMap:
+          defaultMode: 0644
+          name: filebeat-inputs
+        name: inputs
+      - hostPath:
+          path: /var/lib/docker/containers
+          type: ""
+        name: varlibdockercontainers
+      - hostPath:
+          path: /var/lib/filebeat-data
+          type: DirectoryOrCreate
+        name: data

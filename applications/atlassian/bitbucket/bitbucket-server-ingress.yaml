@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: traefik
+    kubernetes.io/tls-acme: "true"
+  name: bitbucket-server
+  namespace: atlassian-bitbucket
+spec:
+  rules:
+  - host: bitbucket.domain.com
+    http:
+      paths:
+      - backend:
+          serviceName: bitbucket-server
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - bitbucket.domain.com
+    secretName: bitbucket-tls     

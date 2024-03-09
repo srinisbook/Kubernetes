@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{{ cluster_name }}</title>
+<link rel = "icon" href ="https://cdn4.iconfinder.com/data/icons/file-extension-names-vol-8/512/24-512.png" type="image/gif" sizes="16x16"> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+
+
+@page {
+        size: A4 landscape;
+        background-image: url('https://blog.appoptics.com/wp-content/uploads/2018/08/AO-Blog-Images-3000x2000-Troubleshoot-Kubernetes.jpg');
+        background-size: auto;
+        background-repeat: no-repeat;
+        @frame content_frame {
+            left: 50pt;
+            width: 750pt;
+            height: 550pt;
+            top: 50pt;
+        }  
+    }
+@font-face {
+font-family: DejaMono;
+src: url(font/DejaVuSansMono.ttf);
+}
+
+p { margin: 0; -pdf-keep-with-next: true; font-size: 10pt; color:#021324 }
+h1 { margin: 0; -pdf-keep-with-next: true; font-size: 18pt; }
+h2 { margin: 0; -pdf-keep-with-next: true; font-size: 16pt; }
+h3 { margin: 0; -pdf-keep-with-next: true; font-size: 12pt; color: #021324 }
+h4 { margin: 0; -pdf-keep-with-next: true; font-size: 10pt; color: #183f63 }
+
+table td { -pdf-keep-with-next: true; word-wrap:break-word; }
+
+th,td { margin: 0; -pdf-keep-with-next: true; font-size: 10pt;  }
+td.hideborder { margin: 0; -pdf-keep-with-next: true; font-size: 10pt; border: 0 }
+p.separator { -pdf-keep-with-next: false; font-size: 6pt; }
+
+</style>
+</head>
+<body>
+<p><font size="+5">{{ org }}</font></p>
+<hr>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+
+<pre>
+<h1>Cluster Name  : {{ cluster_name }}</h1>
+<h1>Environment(s): {{ environments }}</h1>
+</pre>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+<pre>
+<h3>Running since    : {{ running_since }}</h3>
+<h3>Capacity         : {{ capacity }}</h3>
+<h3>Total Nodes      : {{ total_nodes }} (masters : {{ masters }}, workers: {{ workers }})</h3>
+<h3>Master Node Type : {{ master_machine_type }}</h3>
+<h3>Worker Node Type : {{ worker_machine_type }}</h3>
+<h3>Master Node Size : {{ master_machine_size }}</h3>
+<h3>Worker Node Size : {{ worker_machine_size }}</h3>
+<h3>Provider         : {{ provider }}</h3>
+</pre>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+<pre>
+<h3>Namespaces    : {{ namespace_count }}</h3>
+<h3>Pods          : {{ pod_count }}</h3>
+<h3>Deployments   : {{ deployments_count }}</h3>
+<h3>Statefulsets  : {{ statefulsets_count }}</h3>
+<h3>Daemonsets    : {{ daemonsets_count }}</h3>
+<h3>Services      : {{ services_count }}</h3>
+<h3>Ingress       : {{ ingresses_count }}</h3>
+<h3>Volumes       : {{ pv_count }}</h3>
+</pre>
+
+<pdf:nextpage></pdf:nextpage>
+
+<pre>
+<h1>Cluster (Master and Worker nodes)</h1>
+</pre>
+<p><b>The Kubernetes master is responsible for maintaining the desired state for your cluster.</b></p>
+<p><b>The nodes in a cluster are the machines ( hosted on a cloud provider like GCP, AWS and Azure or physical machines<br> in a datacenter) that run your applications.</b></p>
+<p class="separator">&nbsp;</p>
+<table  repeat="1"  width="100%" border="1"  cellspacing="0" cellpadding="5" bgcolor="#FFFFFF" border-radius="25px;">
+  <tr>
+    <th width="7%">S.No</th>
+    <th width="40%">Node Name</th>
+    <th width="15%">Role</th>
+    <th width="15%">Node Type</th>
+    <th width="20%">Node Size</th>
+    <th width="8%">Age</th>
+  </tr>
+  {% if node_data %}
+    {{node_data | safe}}
+  {% else %}
+    <tr><td colspan="6" align="center"> No objects found</td></tr>
+  {% endif %}
+</table>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+
+<pre>
+<h1>Namespaces</h1>
+</pre>
+<p><b>Kubernetes namespaces are virtual clusters on the same physical cluster.</b></p>
+<p><b>Namespaces are intended for use in environments with many users spread across multiple teams, or projects.</b></p>
+<p><b>Kubernetes namespaces help different projects, teams, or customers to share a Kubernetes cluster.</b></p>
+<p class="separator">&nbsp;</p>
+<table  repeat="1"  width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="#FFFFFF">
+  <tr>
+    <th width="70px">S.No</th>
+    <th>Name</th>
+    <th>Phase</th>
+    <th width="120px">Age</th>
+  </tr>
+    {{namespace_data | safe}}
+</table>
+<p class="separator">&nbsp;</p>
+<pre>
+<h1>Pods</h1>
+</pre>
+<p><b>A Pod is the basic execution unit of a Kubernetes application, the smallest and simplest unit in the Kubernetes object model <br>that you create or deploy.</b></p>
+<p><b>A Pod is a group of one or more containers (such as Docker containers), with shared storage/network, and a specification for <br>how to run the containers.</b></p>
+<p class="separator">&nbsp;</p>
+<table  repeat="1" width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="#FFFFFF">
+  <tr>
+    <th width="7%">S.No</th>
+    <th width="35%">Name</th>
+    <th width="26%">Namespace</th>
+    <th width="7%">Ready</th>
+    <th width="10%">Status</th>
+    <th width="7%">Restarts</th>
+    <th width="8%">Age</th>
+  </tr>
+    {{pods_data | safe}}
+</table>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+
+<pre>
+<h1>Workloads</h1>
+</pre>
+<p><b>Workloads are controllers that set deployment rules for pods. These controllers represent applications, daemons, and <br>batch jobs running on your cluster.</b></p>
+<p class="separator">&nbsp;</p>
+<table  repeat="1"  width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="#FFFFFF">
+  <tr>
+    <th width="7%">S.No</th>
+    <th width="10%">Type</th>
+    <th width="35%">Name</th>
+    <th width="30%">Namespace</th>
+    <th width="8%">Desired</th>
+    <th width="7%">Ready</th>
+    <th width="8%">Age</th>
+  </tr>
+  {% if workloads_data %}
+    {{workloads_data | safe}}
+  {% else %}
+    <tr><td colspan="7" align="center"> No objects found</td></tr>
+  {% endif %}   
+</table>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+
+<pre>
+<h1>Services</h1>
+</pre>
+<p><b>Service is an abstraction which defines a logical set of Pods and a policy by which to access them.</b></p>
+<p class="separator">&nbsp;</p>
+<table   repeat="1" width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="#FFFFFF">
+  <tr>
+    <th width="7%">S.No</th>
+    <th width="34%">Name</th>
+    <th width="30%">Namespace</th>
+    <th width="10%">Type</th>
+    <th width="8%">Ports</th>
+    <th width="8%">Url</th>
+    <th width="8%">Age</th>
+  </tr>
+  {% if service_data %}
+    {{service_data | safe}}
+  {% else %}
+    <tr><td colspan="7" align="center"> No objects found</td></tr>
+  {% endif %}
+</table>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+  {% if ingress_data %}
+  <pre><h1>Ingress</h1></pre>
+  <p><b>Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster. Traffic routing is controlled by <br>rules defined on the Ingress resource.</b></p>
+  <p><b>Ingress can provide load balancing, SSL termination and name-based virtual hosting.</b></p>
+  <p class="separator">&nbsp;</p>  
+  <table  repeat="1" width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="#FFFFFF">
+      <tr>
+        <th width="7%">S.No</th>
+        <th width="20%">Name</th>
+        <th width="20%">Namespace</th>
+        <th width="20%">Service Names</th>
+        <th width="15%">Paths</th>
+        <th width="10%">Hosts</th>
+        <th width="8%">Age</th>
+      </tr>
+  
+    {{ingress_data | safe}}
+
+  {% endif %}
+</table>
+<p class="separator">&nbsp;</p>
+<p class="separator">&nbsp;</p>
+  {% if pv_table_data %}
+  <pre><h1>Persistent Volumes</h1></pre>
+  <p><b>A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically <br>provisioned using Storage Classes.</b></p>
+  <p class="separator">&nbsp;</p>
+  <table  repeat="1" width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="#FFFFFF">
+      <tr>
+        <th width="7%">S.No</th>
+        <th width="30%">Volume Name</th>
+        <th width="15%">Storage Class</th>
+        <th width="15%" >Capacity</th>
+        <th width="25%">Claim Name</th>
+        <th width="8%">Age</th>
+      </tr>
+    {{pv_table_data | safe}}
+  {% endif %}
+</table>
+</body>
+</html>

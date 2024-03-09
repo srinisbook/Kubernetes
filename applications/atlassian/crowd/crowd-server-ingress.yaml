@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: crowd-server
+  namespace: atlassian-crowd
+  #annotations:
+  #  kubernetes.io/ingress.class: nginx
+  #  nginx.ingress.kubernetes.io/rewrite-target: /
+  #  certmanager.k8s.io/cluster-issuer: 'letsencrypt-prod'
+  #  nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+spec:
+  #tls:
+  # - hosts:
+  #     - crowd.domain.com
+  #   secretName: crowd-server-tls
+  rules:
+   - host: crowd.domain.com
+     http:
+       paths:
+        - path: /
+          backend:
+           serviceName: crowd-server
+           servicePort: 8095

@@ -1,0 +1,64 @@
+apiVersion: v1
+data:
+  filebeat.yml: |-
+    filebeat.config:
+      modules:
+        path: ${path.config}/modules.d/*.yml
+        reload.enabled: false
+      inputs:
+        path: ${path.config}/inputs.d/*.yml
+        reload.enabled: false
+ 
+    processors:
+      - add_cloud_metadata:
+
+    fields:
+      kubernetes_cluster: my-cluster
+      env: development
+ 
+    setup:
+      template:
+        #name: "<CLUSTER_NAME>-%{[beat.version]}"
+        name: "filebeat-%{[beat.version]}"
+        #pattern: "<CLUSTER_NAME>-*"
+        pattern: "filebeat-*"
+      dashboards:
+        #index: "<CLUSTER_NAME>-*"
+        index: "filebeat-*"
+      kibana:
+        #hosts: https://kibana.domain.com
+        host: http://kibana:5601
+      #settings:
+      #  index.number_of_shards: 1
+      #  index.codec: best_compression
+
+    output.elasticsearch:
+      #hosts: ["https://elastic.domain.com"]
+      hosts: ["http://elasticsearch:9200"]
+      #username: elastic
+      #password: changeme
+      #index: "<CLUSTER_NAME>-%{[beat.version]}-%{+yyyy.MM}"
+      index: "filebeat-%{[beat.version]}-%{+yyyy.MM}"   
+kind: ConfigMap
+metadata:
+  labels:
+    app: filebeat
+  name: filebeat-config
+  namespace: elastic-logging
+---
+apiVersion: v1
+data:
+  kubernetes.yml: |-
+    - type: docker
+      containers.ids:
+      - "*"
+      ignore_older: 72h
+      processors:
+        - add_kubernetes_metadata:
+            in_cluster: true
+kind: ConfigMap
+metadata:
+  labels:
+    app: filebeat
+  name: filebeat-inputs
+  namespace: elastic-logging

@@ -1,0 +1,4 @@
+django 
+kubernetes
+pillow 
+xhtml2pdf

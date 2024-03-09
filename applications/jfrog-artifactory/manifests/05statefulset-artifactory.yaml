@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: artifactory
+  name: artifactory
+  namespace: jfrog-artifactory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: artifactory
+  serviceName: artifactory
+  template:
+    metadata:
+      labels:
+        app: artifactory
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          set -e; /entrypoint-artifactory.sh
+        env:
+        - name: DB_TYPE
+          value: postgresql
+        - name: DB_HOST
+          value: postgres.postgres
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: postgres
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-creds
+              key: password
+        - name: EXTRA_JAVA_OPTIONS
+          value: |
+            -Dartifactory.async.corePoolSize=8
+        - name: ARTIFACTORY_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: master-key-secret
+              key: master-key   
+        image: docker.bintray.io/jfrog/artifactory-oss:6.15.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /artifactory/webapp/#/login
+            port: 8040
+            scheme: HTTP
+          initialDelaySeconds: 90
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        name: artifactory
+        ports:
+        - containerPort: 8081
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /artifactory/webapp/#/login
+            port: 8040
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/opt/jfrog/artifactory
+          name: artifactory-volume
+        - mountPath: /artifactory_extra_conf/binarystore.xml
+          name: binarystore-xml
+          subPath: binarystore.xml
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - | 
+           rm -rf /var/opt/jfrog/artifactory/etc/db.properties
+           rm -rf /var/opt/jfrog/artifactory/lost+found 
+           rm -rf /var/opt/jfrog/artifactory/data/.lock
+
+           chown -R 1030:1030 /var/opt/jfrog/artifactory/
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        name: delete-data
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/opt/jfrog/artifactory
+          name: artifactory-volume
+      serviceAccount: artifactory
+      volumes:
+      - name: binarystore-xml
+        configMap:
+          defaultMode: 420  
+          name: artifactory-binarystore-conf  
+  volumeClaimTemplates:
+  - metadata:
+      name: artifactory-volume
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100Gi

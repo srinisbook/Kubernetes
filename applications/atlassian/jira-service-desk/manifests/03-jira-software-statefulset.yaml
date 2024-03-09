@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: jira-service-desk
+  name: jira-service-desk
+  namespace: atlassian-jira-service-desk
+spec:
+  serviceName: jira-software-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jira-service-desk
+  template:
+    metadata:
+      labels:
+        app: jira-service-desk
+    spec:
+      initContainers:
+      - name: "init-chown-data"
+        image: busybox:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh","-c"]
+        args: ["chown -R  65534:65534 /var/atlassian/application-data/jira; chmod -R 777 /var/atlassian/application-data/jira"]
+        volumeMounts:
+        - name: jira-service-desk-data
+          mountPath: /var/atlassian/application-data/jira
+          subPath: ""
+      containers:
+      - env:
+        - name: JVM_MINIMUM_MEMORY
+          value: 1024m
+        - name: JVM_MAXIMUM_MEMORY
+          value: 2048m
+        image: atlassian/jira-servicedesk:latest
+        imagePullPolicy: IfNotPresent
+        name: jira-service-desk
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          successThreshold: 1
+          tcpSocket:
+            port: http
+          timeoutSeconds: 5  
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          successThreshold: 1
+          tcpSocket:
+            port: http
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /var/atlassian/application-data/jira
+          name: jira-service-desk-data
+      volumes:
+      - name: jira-service-desk-data
+        persistentVolumeClaim:
+          claimName: jira-service-desk-data

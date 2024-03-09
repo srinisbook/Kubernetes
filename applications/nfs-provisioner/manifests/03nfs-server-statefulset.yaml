@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nfs-server
+  namespace: nfs-provisioner
+spec:
+  serviceName: nfs-server
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nfs-server
+  template:
+    metadata:
+      labels:
+        app: nfs-server
+    spec:
+      containers:
+      - args:
+        - -provisioner=k8s.local/nfs-server-provisioner
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: SERVICE_NAME
+          value: nfs-server
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: quay.io/kubernetes_incubator/nfs-provisioner:v2.2.1-k8s1.12
+        imagePullPolicy: IfNotPresent
+        name: nfs-server
+        ports:
+        - containerPort: 2049
+          name: nfs
+          protocol: TCP
+        - containerPort: 20048
+          name: mountd
+          protocol: TCP
+        - containerPort: 111
+          name: rpcbind-tcp
+          protocol: TCP
+        - containerPort: 111
+          name: rpcbind-udp
+          protocol: UDP
+        resources: {}
+        securityContext:
+          capabilities:
+            add:
+            - DAC_READ_SEARCH
+            - SYS_RESOURCE
+        volumeMounts:
+        - mountPath: /export
+          name: data
+      serviceAccount: nfs-server
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 500Gi
+      volumeMode: Filesystem

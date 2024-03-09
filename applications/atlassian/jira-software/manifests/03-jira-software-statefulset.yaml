@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: jira-software
+  name: jira-software
+  namespace: atlassian-jira-software
+spec:
+  serviceName: jira-software-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jira-software
+  template:
+    metadata:
+      labels:
+        app: jira-software
+    spec:
+      initContainers:
+      - name: "init-chown-data"
+        image: busybox:latest
+        imagePullPolicy: Always
+        command: ["/bin/sh","-c"]
+        args: ["chown -R  65534:65534 /var/atlassian/jira; chmod -R 777 /var/atlassian/jira"]
+        volumeMounts:
+        - name: jira-data
+          mountPath: /var/atlassian/jira
+          subPath: ""
+      containers:
+      - env:
+        - name: JVM_MINIMUM_MEMORY
+          value: 1024m
+        - name: JVM_MAXIMUM_MEMORY
+          value: 2048m
+        image: atlassian/jira-software:latest
+        imagePullPolicy: IfNotPresent
+        name: jira-software
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          successThreshold: 1
+          tcpSocket:
+            port: http
+          timeoutSeconds: 5  
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          successThreshold: 1
+          tcpSocket:
+            port: http
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /var/atlassian/jira
+          name: jira-data
+      volumes:
+      - name: jira-data
+        persistentVolumeClaim:
+          claimName: jira-software

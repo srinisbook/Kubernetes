@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: graylog
+  namespace: graylog-logging
+spec:
+  serviceName: graylog
+  replicas: 2
+  selector:
+    matchLabels:
+      app: graylog
+  template:
+    metadata:
+      labels:
+        app: graylog
+    spec:
+      initContainers:
+      - name: "init-chown-data"
+        image: busybox:latest
+        imagePullPolicy: Always
+        command: 
+        - /bin/sh
+        - -c
+        - | 
+           rm -rf /usr/share/graylog/data/journal/lost+found
+           rm -rf /usr/share/graylog/data/journal/graylog2-committed-read-offset
+           rm -rf /usr/share/graylog/data/journal/messagejournal-0
+           rm -rf /usr/share/graylog/data/journal/recovery-point-offset-checkpoint
+           chown -R 1100:1100 /usr/share/graylog/data/journal
+        volumeMounts:
+        - name: journal
+          mountPath: /usr/share/graylog/data/journal  
+      containers:
+      - name: graylog
+        image: graylog/graylog:3.1
+        env:
+        - name: GRAYLOG_PASSWORD_SECRET
+          value: g0ABP9MJnWCjWtBX9JHFgjKAmD3wGXP3E0JQNOKlquDHnCn5689QAF8rRL66HacXLPA6fvwMY8BZoVVw0JqHnSAZorDDOdCk
+        - name: GRAYLOG_ROOT_PASSWORD_SHA2
+          value: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+        - name: GRAYLOG_HTTP_EXTERNAL_URI
+          value: http://104.198.208.209:9000/
+        - name: GRAYLOG_ELASTICSEARCH_HOSTS
+          value: http://elasticsearch:9200
+        - name: GRAYLOG_MONGODB_URI
+          value: mongodb://mongodb:27017/graylog
+        ports:
+        - containerPort: 9000
+          name: web
+        - containerPort: 12201
+          name: tcp
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1024Mi
+        livenessProbe:
+            httpGet:
+              path: /api/system/lbstatus
+              port: 9000
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+        readinessProbe:
+            httpGet:
+              path: /api/system/lbstatus
+              port: 9000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 5    
+        volumeMounts:
+        - name: journal
+          mountPath: /usr/share/graylog/data/journal
+  volumeClaimTemplates:
+    - metadata:
+        name: journal
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 100Gi

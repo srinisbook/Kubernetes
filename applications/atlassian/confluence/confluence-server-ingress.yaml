@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: traefik
+    kubernetes.io/tls-acme: "true"
+  name: confluence-server
+  namespace: atlassian-confluence
+spec:
+  rules:
+  - host: confluence.domain.com
+    http:
+      paths:
+      - backend:
+          serviceName: confluence-server
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - confluence.domain.com
+    secretName: confluence-server-tls     
