@@ -10,7 +10,7 @@ Documentation for cert-manager can be found at [docs.cert-manager.io](https://do
 
 ## Install cert-manager
 
-    $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+    $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
 
 ### Helm chart
 
@@ -25,7 +25,6 @@ helm repo update
 helm install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  --version v1.7.1 \
   --set installCRDs=true
 ```
 
@@ -82,41 +81,34 @@ List all cluster-issuers
     letsencrypt-prod      1d
     letsencrypt-stage     1d
 
-#### Ingress object annotation
+#### Create a certificate
 
-You must add an annotation in the ingress configuration with issuer or clusterissuer name.
+Create a certificate yaml with the name as the certificate.yaml. 
+```
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: frontend
+spec:
+  secretName: frontend-tls
+  renewBefore: 240h
+  duration: 2160h
+  commonName: app.mydomain.com
+  dnsNames:
+  - app.mydomain.com
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+```
+Ensure that the certificate status is displayed as READY and that a secret of type TLS has been successfully created, as shown below: 
 
-    apiVersion: extensions/v1beta1
-    kind: Ingress
-    metadata:
-      name: frontend-ingress
-      annotations:
-        kubernetes.io/ingress.class: nginx
-        certmanager.k8s.io/cluster-issuer: letsencrypt-prod
-       #certmanager.k8s.io/issuer: letsencrypt-prod
-    spec:
-      tls:
-      - hosts:
-        - app.mydomain.com
-        secretName: app-mydomain-com
-      rules:
-      - host: app.mydomain.com
-        http:
-          paths:
-          - path: /
-            backend:
-              serviceName: frontend
-              servicePort: 8080      
-
-Once the ingress created, there should be a tls secret and certifcate created.
+    $ kubectl get cert      
+    NAME       READY   SECRET          AGE
+    frontend   True    frontend-tls    39s
 
     $ kubectl get secrets
-    NAME                TYPE               DATA   AGE
-    app-mydomain-com    kubernetes.io/tls  3      1d
-    
-    $ kubectl get certificates
-    NAME                READY   SECRET            AGE
-    app-mydomain-com    True    app-mydomain-com  1d
+    NAME           TYPE                DATA   AGE
+    frontend-tls   kubernetes.io/tls   2      23s
 
 If you found that the certificate or secret not created, then check the logs of the cert-manger service for errors.
 
