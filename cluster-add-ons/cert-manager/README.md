@@ -10,7 +10,7 @@ Documentation for cert-manager can be found at [docs.cert-manager.io](https://do
 
 ## Install cert-manager
 
-    $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+    $ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.0/cert-manager.yaml
 
 ### Helm chart
 
@@ -81,6 +81,24 @@ List all cluster-issuers
     NAME                  AGE
     letsencrypt-prod      1d
     letsencrypt-stage     1d
+
+#### Create a certificate
+Create a certificate yaml with the name as the certificate.yaml. 
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: frontend
+spec:
+  secretName: frontend-tls
+  renewBefore: 240h
+  duration: 2160h
+  commonName: app.mydomain.com
+  dnsNames:
+  - app.mydomain.com
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
 
 #### Ingress object annotation
 
