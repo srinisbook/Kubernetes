@@ -84,7 +84,7 @@ List all cluster-issuers
 #### Create a certificate
 
 Create a certificate yaml with the name as the certificate.yaml. 
-
+```
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -99,16 +99,16 @@ spec:
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
-
+```
 Ensure that the certificate status is displayed as READY and that a secret of type TLS has been successfully created, as shown below: 
 
-$ kubectl get cert      
-NAME       READY   SECRET          AGE
-frontend   True    frontend-tls    39s
+    $ kubectl get cert      
+    NAME       READY   SECRET          AGE
+    frontend   True    frontend-tls    39s
 
-$ kubectl get secrets
-NAME           TYPE                DATA   AGE
-frontend-tls   kubernetes.io/tls   2      23s
+    $ kubectl get secrets
+    NAME           TYPE                DATA   AGE
+    frontend-tls   kubernetes.io/tls   2      23s
 
 If you found that the certificate or secret not created, then check the logs of the cert-manger service for errors.
 
